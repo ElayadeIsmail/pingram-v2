@@ -1,0 +1,8 @@
+query Profile($id: Int!) {
+  profile(id: $id) {
+    user {
+      ...UserProfile
+    }
+    isCurrentUserProfile
+  }
+}

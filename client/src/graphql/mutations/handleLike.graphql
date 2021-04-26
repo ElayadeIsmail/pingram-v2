@@ -1,0 +1,3 @@
+mutation HandleLike($postId: Int!) {
+  handleLike(postId: $postId)
+}

@@ -1,0 +1,14 @@
+fragment UserProfile on ProfileUser {
+  id
+  username
+  bio
+  avatar
+  follower_followers_leaderIdTousers {
+    id
+  }
+  _count {
+    posts
+    follower_followers_followerIdTousers
+    follower_followers_leaderIdTousers
+  }
+}

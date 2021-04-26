@@ -1,0 +1,81 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["selectRelationCount"]
+}
+
+// generator typegraphql {
+//   provider = "typegraphql-prisma"
+//   output   = "../src/generated/typegraphql-prisma"
+// }
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model comment {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @default(now())
+  contents  String
+  userId    Int
+  postId    Int
+  posts     post      @relation(fields: [postId], references: [id])
+  users     user      @relation(fields: [userId], references: [id])
+  likes     like[]
+}
+
+model follower {
+  id                                 Int       @id @default(autoincrement())
+  createdAt                          DateTime? @default(now())
+  leaderId                           Int
+  followerId                         Int
+  users_followers_follower_idTousers user      @relation("follower_followerIdTousers", fields: [followerId], references: [id])
+  users_followers_leaderIdTousers    user      @relation("follower_leaderIdTousers", fields: [leaderId], references: [id])
+
+  @@unique([leaderId, followerId], name: "follower_leaderId_followerId_key")
+}
+
+model like {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime? @default(now())
+  userId    Int
+  postId    Int?
+  commentId Int?
+  comments  comment?  @relation(fields: [commentId], references: [id])
+  posts     post?     @relation(fields: [postId], references: [id])
+  user      user      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, postId, commentId], name: "like_userId_postId_commentId_key")
+}
+
+model post {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime? @unique @default(now())
+  updatedAt DateTime? @default(now())
+  url       String
+  caption   String?
+  userId    Int
+  user      user      @relation(fields: [userId], references: [id])
+  comments  comment[]
+  likes     like[]
+}
+
+model user {
+  id                                   Int        @id @default(autoincrement())
+  createdAt                            DateTime?  @default(now())
+  updatedAt                            DateTime?  @default(now())
+  username                             String     @unique
+  bio                                  String?    @default("")
+  avatar                               String?    @default("https://res.cloudinary.com/elayade/image/upload/c_scale,w_264/v1616324216/instagram/iu_murtgl.png")
+  phone                                String?    @unique
+  email                                String?    @unique
+  password                             String?
+  comments                             comment[]
+  follower_followers_followerIdTousers follower[] @relation("follower_followerIdTousers")
+  follower_followers_leaderIdTousers   follower[] @relation("follower_leaderIdTousers")
+  likes                                like[]
+  posts                                post[]
+
+  @@index([username], name: "users_username_idx")
+}

@@ -1,0 +1,17 @@
+fragment RegularPost on PostResponse {
+  id
+  url
+  createdAt
+  _count {
+    likes
+    comments
+  }
+  user {
+    id
+    username
+    avatar
+  }
+  likes {
+    createdAt
+  }
+}
