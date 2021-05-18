@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@apollo/client": "^3.3.13",
-    "@headlessui/react": "^0.3.1",
+    "@headlessui/react": "^1.2.0",
+    "@heroicons/react": "^1.0.1",
     "downshift": "^6.1.2",
     "formik": "^2.2.6",
     "framer-motion": "^4.1.3",

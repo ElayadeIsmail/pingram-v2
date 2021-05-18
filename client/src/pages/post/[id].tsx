@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { Comment } from '../../components/Comment';
 import { HeadComponent } from '../../components/Head';
 import { Layout } from '../../components/Layout';
+import { Modal } from '../../components/Modal_';
 import { Spinner } from '../../components/Spinner';
 import {
   CreateCommentMutation,
@@ -63,12 +64,11 @@ const updateCache = (
 
 const Post: React.FC<PostProps> = ({}) => {
   const [contents, setContents] = useState('');
+  const [open, setOpen] = useState(false);
   const router = useRouter();
   const id = getIdAsNumber(router.query.id!);
-  const [
-    createComment,
-    { loading: commentLoading },
-  ] = useCreateCommentMutation();
+  const [createComment, { loading: commentLoading }] =
+    useCreateCommentMutation();
   const { data: meData } = useMeQuery();
   const { data, loading } = usePostQuery({
     variables: {
@@ -90,6 +90,54 @@ const Post: React.FC<PostProps> = ({}) => {
       </Layout>
     );
   }
+
+  const onDelete = async () => {
+    try {
+      await deletePost({
+        variables: {
+          id,
+        },
+        update: (cache) => {
+          cache.evict({ id: 'PostResponse:' + id });
+          const userProfileData = cache.readFragment<{
+            id: number;
+            _count: {
+              posts: number;
+              follower_followers_followerIdTousers: number;
+              follower_followers_leaderIdTousers: number;
+            };
+          }>({
+            id: 'ProfileUser:' + meData?.me?.id,
+            fragment: gql`
+              fragment _ on ProfileUser {
+                id
+                _count
+              }
+            `,
+          });
+          if (userProfileData) {
+            cache.writeFragment({
+              id: 'ProfileUser:' + meData?.me?.id,
+              fragment: gql`
+                fragment _ on ProfileUser {
+                  _count
+                }
+              `,
+              data: {
+                _count: {
+                  ...userProfileData?._count,
+                  posts: userProfileData?._count.posts! - 1,
+                },
+              },
+            });
+          }
+        },
+      });
+      router.push('/');
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <Layout>
       <HeadComponent>Pingram: Share The Moment</HeadComponent>
@@ -130,22 +178,7 @@ const Post: React.FC<PostProps> = ({}) => {
                   <button
                     type='submit'
                     className='text-base font-medium rounded-lg px-4 py-2 bg-red-600 hover:bg-red-800 focus:outline-none text-white'
-                    disabled={deleteLoading}
-                    onClick={async () => {
-                      try {
-                        await deletePost({
-                          variables: {
-                            id,
-                          },
-                          update: (cache) => {
-                            cache.evict({ id: 'PostResponse:' + id });
-                          },
-                        });
-                        router.push('/');
-                      } catch (error) {
-                        console.log(error);
-                      }
-                    }}
+                    onClick={() => setOpen(true)}
                   >
                     Delete Post
                   </button>
@@ -209,6 +242,13 @@ const Post: React.FC<PostProps> = ({}) => {
           </div>
         )}
       </div>
+      <Modal
+        disabled={deleteLoading}
+        open={open}
+        setOpen={setOpen}
+        title='Post'
+        onConfirm={onDelete}
+      />
     </Layout>
   );
 };

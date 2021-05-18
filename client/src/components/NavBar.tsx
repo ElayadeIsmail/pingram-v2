@@ -15,13 +15,6 @@ import { limit } from '../utils/constants';
 import { uploadFile } from '../utils/uploadFile';
 import { Search } from './Search';
 
-// enter='transition ease-out duration-100'
-// enterFrom='transform opacity-0 scale-95'
-// enterTo='transform opacity-100 scale-100'
-// leave='transition ease-in duration-75'
-// leaveFrom='transform opacity-100 scale-100'
-// leaveTo='transform opacity-0 scale-95'
-
 const variants = {
   open: { opacity: 1, scale: 1, display: 'block' },
   close: { opacity: 0, scale: 0.95, display: 'none' },

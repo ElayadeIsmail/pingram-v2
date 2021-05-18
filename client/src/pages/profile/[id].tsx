@@ -7,13 +7,14 @@ import { Button } from '../../components/Button';
 import { FetchMoreSpinner } from '../../components/FetchMoreSpinner';
 import { HeadComponent } from '../../components/Head';
 import { Layout } from '../../components/Layout';
-import { Modal } from '../../components/Modal';
+import { Modal } from '../../components/Modal_';
 import { PostComponent } from '../../components/PostComponent';
 import { Spinner } from '../../components/Spinner';
 import {
   HandleFollowMutation,
   MeDocument,
   MeQuery,
+  useDeleteAccountMutation,
   useHandleFollowMutation,
   usePostsQuery,
   useProfileQuery,
@@ -146,13 +147,22 @@ const updateFollowStatus = (
 const Profile = () => {
   const router = useRouter();
   const id = getIdAsNumber(router.query.id!);
-  const [isOpen, setIsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const { data, loading: userLoading } = useProfileQuery({
     variables: {
       id,
     },
   });
   const [handleFollow] = useHandleFollowMutation();
+
+  const [deleteAccount, { loading, client }] = useDeleteAccountMutation();
+
+  const onDelete = async () => {
+    await deleteAccount();
+    await client.cache.reset();
+    setOpen(false);
+    router.push('/register');
+  };
 
   const {
     data: postsData,
@@ -317,7 +327,7 @@ const Profile = () => {
                 <div className='w-full mt-8'>
                   <Button
                     isSubmitting={false}
-                    onClick={() => setIsOpen(true)}
+                    onClick={() => setOpen(true)}
                     type='button'
                     className='w-full bg-red-600 hover:bg-red-800'
                   >
@@ -346,7 +356,14 @@ const Profile = () => {
           {postsData?.posts.hasMore && <FetchMoreSpinner />}
         </div>
       </div>
-      {isOpen && <Modal setIsOpen={setIsOpen} />}
+      <Modal
+        disabled={loading}
+        open={open}
+        setOpen={setOpen}
+        title='Account'
+        onConfirm={onDelete}
+        showIcon
+      />
     </Layout>
   );
 };

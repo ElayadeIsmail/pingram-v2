@@ -34,7 +34,7 @@ const Home = () => {
     var clientHeight =
       document.documentElement.clientHeight || window.innerHeight;
     var scrolledToBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
-    if (scrolledToBottom && data?.posts.posts.length) {
+    if (scrolledToBottom && data?.posts.posts.length && !loading) {
       fetchMore({
         variables: {
           limit: variables?.limit,
